@@ -21,7 +21,6 @@ public class ProjectsController : Controller
         return View(await applicationDbContext.ToListAsync());
     }
 
-    // GET: Projects/Details/5
     public async Task<IActionResult> Details(int? id)
     {
         if (id == null)
