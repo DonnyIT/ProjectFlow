@@ -4,9 +4,11 @@
     ViewData["Title"] = "Home Page";
 }
 
+<script src="./js/site.js"></script>
+
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
-    <p>Here are the projects and tasks that need to be completed today:</p>
+    <h3>Here are the projects and tasks that need to be completed today:</h3>
 </div>
 
 <div class="row">
@@ -17,7 +19,7 @@
             {
                 @foreach (var project in Model.Projects)
                 {
-                    <li class="list-group-item">
+                    <li class="list-group-item project-item">
                         <h5>@project.Name</h5>
                         <p>@project.Description</p>
                         <ul>
@@ -25,7 +27,7 @@
                             {
                                 @foreach (var task in project.Tasks.Where(t => t.DueDate == DateTime.Today && !t.IsCompleted))
                                 {
-                                    <li>@task.Title - @task.DueDate.ToShortDateString()</li>
+                                    <li class="task-item">@task.Title - @task.DueDate.ToShortDateString()</li>
                                 }
                             }
                         </ul>
@@ -41,7 +43,7 @@
             {
                 @foreach (var task in Model.Tasks)
                 {
-                    <li class="list-group-item">
+                    <li class="list-group-item task-item">
                         <h5>@task.Title</h5>
                         <p>@task.Description</p>
                         @if (task.Project != null)
@@ -55,3 +57,4 @@
         </ul>
     </div>
 </div>
+

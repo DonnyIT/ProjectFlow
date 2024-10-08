@@ -45,7 +45,11 @@
                 @Html.DisplayFor(modelItem => item.UpdatedAt)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Owner.Id)
+                @if (item.Owner != null)
+                {
+                    @Html.DisplayFor(modelItem => item.Owner.Id)
+                }
+                
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.ProjectId" class="btn btn-primary btn-sm">Edit</a>

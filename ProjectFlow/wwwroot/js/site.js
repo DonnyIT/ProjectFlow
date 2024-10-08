@@ -1,4 +1,20 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
+﻿document.addEventListener('DOMContentLoaded', function () {
+    const menuIcon = document.querySelector('.menu-icon');
+    const menuContent = document.querySelector('.menu-content');
 
-// Write your JavaScript code.
+    menuIcon.addEventListener('mouseover', () => {
+        menuContent.style.display = 'block';
+    });
+
+    menuIcon.addEventListener('mouseout', () => {
+        menuContent.style.display = 'none';
+    });
+
+    menuContent.addEventListener('mouseover', () => {
+        menuContent.style.display = 'block';
+    });
+
+    menuContent.addEventListener('mouseout', () => {
+        menuContent.style.display = 'none';
+    });
+});

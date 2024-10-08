@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ProjectFlow.Data;
 using ProjectFlow.Models;
@@ -8,24 +9,43 @@ using ProjectFlow.Models;
 public class TasksController : Controller
 {
     private readonly ApplicationDbContext _context;
+    private readonly UserManager<IdentityUser> _userManager;
 
-    public TasksController(ApplicationDbContext context)
+    public TasksController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
     {
         _context = context;
+        _userManager = userManager;
     }
 
-    // GET: Tasks
-    [Authorize(Roles = "Admin, Project Manager, Team Member")]
+    private async System.Threading.Tasks.Task SetUserRolesInViewBag()
+    {
+        var users = await _userManager.Users.ToListAsync();
+        var userRoles = new List<UserRole>();
+
+        foreach (var user in users)
+        {
+            var roles = await _userManager.GetRolesAsync(user);
+            userRoles.Add(new UserRole
+            {
+                UserName = user.UserName,
+                Roles = roles
+            });
+        }
+
+        ViewBag.UserRoles = userRoles;
+    }
+
     public async Task<IActionResult> Index()
     {
-        var applicationDbContext = _context.Tasks.Include(t => t.AssignedUser).Include(t => t.Project);
-        return View(await applicationDbContext.ToListAsync());
+        await SetUserRolesInViewBag();
+        var tasks = await _context.Tasks.Include(t => t.AssignedUser).Include(t => t.Project).ToListAsync();
+        return View(tasks);
     }
 
     // GET: Tasks/Details/5
-    [Authorize(Roles = "Admin, Project Manager, Team Member")]
     public async Task<IActionResult> Details(int? id)
     {
+        await SetUserRolesInViewBag();
         if (id == null)
         {
             return NotFound();
@@ -45,8 +65,9 @@ public class TasksController : Controller
 
     // GET: Tasks/Create
     [Authorize(Roles = "Admin, Project Manager")]
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
+        await SetUserRolesInViewBag();
         ViewData["AssignedUserId"] = new SelectList(_context.Users, "Id", "Id");
         ViewData["ProjectId"] = new SelectList(_context.Projects, "ProjectId", "Name");
         return View();
@@ -58,6 +79,7 @@ public class TasksController : Controller
     [Authorize(Roles = "Admin, Project Manager")]
     public async Task<IActionResult> Create([Bind("TaskId,Title,Description,DueDate,IsCompleted,UpdatedAt,ProjectId,AssignedUserId")] ProjectFlow.Models.Task task)
     {
+        await SetUserRolesInViewBag();
         if (ModelState.IsValid)
         {
             _context.Add(task);
@@ -73,6 +95,7 @@ public class TasksController : Controller
     [Authorize(Roles = "Admin, Project Manager")]
     public async Task<IActionResult> Edit(int? id)
     {
+        await SetUserRolesInViewBag();
         if (id == null)
         {
             return NotFound();
@@ -94,6 +117,7 @@ public class TasksController : Controller
     [Authorize(Roles = "Admin, Project Manager")]
     public async Task<IActionResult> Edit(int id, [Bind("TaskId,Title,Description,DueDate,IsCompleted,UpdatedAt,ProjectId,AssignedUserId")] ProjectFlow.Models.Task task)
     {
+        await SetUserRolesInViewBag();
         if (id != task.TaskId)
         {
             return NotFound();
@@ -128,6 +152,7 @@ public class TasksController : Controller
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int? id)
     {
+        await SetUserRolesInViewBag();
         if (id == null)
         {
             return NotFound();
@@ -151,11 +176,13 @@ public class TasksController : Controller
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
+        await SetUserRolesInViewBag();
         var task = await _context.Tasks.FindAsync(id);
         if (task == null)
         {
             return NotFound();
         }
+
         _context.Tasks.Remove(task);
         await _context.SaveChangesAsync();
         return RedirectToAction(nameof(Index));

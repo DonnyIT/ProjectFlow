@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ProjectFlow.Data;
 using ProjectFlow.Models;
@@ -8,21 +9,42 @@ using ProjectFlow.Models;
 public class ProjectsController : Controller
 {
     private readonly ApplicationDbContext _context;
+    private readonly UserManager<IdentityUser> _userManager;
 
-    public ProjectsController(ApplicationDbContext context)
+    public ProjectsController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
     {
         _context = context;
+        _userManager = userManager;
     }
 
-    // GET: Projects
+    private async System.Threading.Tasks.Task SetUserRolesInViewBag()
+    {
+        var users = await _userManager.Users.ToListAsync();
+        var userRoles = new List<UserRole>();
+
+        foreach (var user in users)
+        {
+            var roles = await _userManager.GetRolesAsync(user);
+            userRoles.Add(new UserRole
+            {
+                UserName = user.UserName,
+                Roles = roles
+            });
+        }
+
+        ViewBag.UserRoles = userRoles;
+    }
+
     public async Task<IActionResult> Index()
     {
+        await SetUserRolesInViewBag();
         var applicationDbContext = _context.Projects.Include(p => p.Owner);
         return View(await applicationDbContext.ToListAsync());
     }
 
     public async Task<IActionResult> Details(int? id)
     {
+        await SetUserRolesInViewBag();
         if (id == null)
         {
             return NotFound();
@@ -41,8 +63,9 @@ public class ProjectsController : Controller
 
     // GET: Projects/Create
     [Authorize(Roles = "Admin, Project Manager")]
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
+        await SetUserRolesInViewBag();
         ViewData["OwnerId"] = new SelectList(_context.Users, "Id", "Id");
         return View();
     }
@@ -53,6 +76,7 @@ public class ProjectsController : Controller
     [Authorize(Roles = "Admin, Project Manager")]
     public async Task<IActionResult> Create([Bind("ProjectId,Name,Description,CreatedAt,UpdatedAt,OwnerId")] Project project)
     {
+        await SetUserRolesInViewBag();
         if (ModelState.IsValid)
         {
             _context.Add(project);
@@ -67,6 +91,7 @@ public class ProjectsController : Controller
     [Authorize(Roles = "Admin, Project Manager")]
     public async Task<IActionResult> Edit(int? id)
     {
+        await SetUserRolesInViewBag();
         if (id == null)
         {
             return NotFound();
@@ -87,6 +112,7 @@ public class ProjectsController : Controller
     [Authorize(Roles = "Admin, Project Manager")]
     public async Task<IActionResult> Edit(int id, [Bind("ProjectId,Name,Description,CreatedAt,UpdatedAt,OwnerId")] Project project)
     {
+        await SetUserRolesInViewBag();
         if (id != project.ProjectId)
         {
             return NotFound();
@@ -120,6 +146,7 @@ public class ProjectsController : Controller
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int? id)
     {
+        await SetUserRolesInViewBag();
         if (id == null)
         {
             return NotFound();
@@ -142,6 +169,7 @@ public class ProjectsController : Controller
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
+        await SetUserRolesInViewBag();
         var project = await _context.Projects.FindAsync(id);
         if (project == null)
         {

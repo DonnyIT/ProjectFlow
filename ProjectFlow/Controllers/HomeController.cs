@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjectFlow.Data;
@@ -9,10 +10,12 @@ using System.Threading.Tasks;
 public class HomeController : Controller
 {
     private readonly ApplicationDbContext _context;
+    private readonly UserManager<IdentityUser> _userManager;
 
-    public HomeController(ApplicationDbContext context)
+    public HomeController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
     {
         _context = context;
+        _userManager = userManager;
     }
 
     public async Task<IActionResult> Index()
@@ -28,10 +31,26 @@ public class HomeController : Controller
             .Include(t => t.Project)
             .ToListAsync();
 
+        var users = await _userManager.Users.ToListAsync();
+        var userRoles = new List<UserRole>();
+
+        foreach (var user in users)
+        {
+            var roles = await _userManager.GetRolesAsync(user);
+
+            userRoles.Add(new UserRole
+            {
+                UserName = user.UserName,
+                Roles = roles
+            });
+        }
+
+        ViewBag.UserRoles = userRoles;
+
         var model = new Home
         {
             Projects = projects,
-            Tasks = tasks
+            Tasks = tasks,
         };
 
         return View(model);
