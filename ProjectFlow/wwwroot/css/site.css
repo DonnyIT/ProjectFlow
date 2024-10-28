@@ -9,7 +9,7 @@ body {
 
 header {
     background-color: #007bff;
-    color: white;
+    color: black;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -19,13 +19,13 @@ header {
 }
 
 .nav-link {
-    color: black !important;
+    color: rgb(25, 120, 94) !important;
     transition: color 0.3s ease;
 }
 
-    .nav-link:hover {
-        color: #ffc107 !important;
-    }
+.nav-link:hover {
+    color: darkblue !important;
+}
 
 .footer {
     background-color: #343a40;
@@ -147,12 +147,11 @@ h1, h2, h3, h4, h5, h6 {
 /* Стилі для меню */
 .menu {
     position: relative;
+    background-color: black;
     display: inline-block;
-    margin: 5px;
 }
 
 .menu-icon {
-    color: black;
     font-size: 2rem;
     cursor: pointer;
 }
@@ -166,11 +165,11 @@ h1, h2, h3, h4, h5, h6 {
     z-index: 1;
 }
 
-.menu-content .list-group-item {
-    border: none;
-    padding: 10px 20px;
-}
+    .menu-content .list-group-item {
+        border: none;
+        padding: 10px 20px;
+    }
 
-.menu-content .list-group-item:hover {
-    background-color: white;
-}
+        .menu-content .list-group-item:hover {
+            background-color: #f1f1f1;
+        }
